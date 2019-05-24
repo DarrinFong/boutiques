@@ -4,6 +4,7 @@ from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 import json
+import simplejson
 import requests
 import os
 
@@ -30,7 +31,7 @@ class Publisher():
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
-        self.descriptor = json.loads(open(self.descriptor_file_name).read())
+        self.descriptor = simplejson.loads(open(self.descriptor_file_name).read())
 
         # Get relevant descriptor properties
         self.url = self.descriptor.get('url')
