@@ -85,7 +85,7 @@ class CreateDescriptor(object):
             raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
                         "{2} {3}".format(docker_image_name, stdout,
                                          os.linesep, stderr))
-        image_attrs = simplejson.loads(stdout.decode("utf-8"))[0]
+        image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
             container_config = image_attrs['ContainerConfig']
             entrypoint = container_config.get('Entrypoint')

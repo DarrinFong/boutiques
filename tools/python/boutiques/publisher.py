@@ -32,7 +32,7 @@ class Publisher():
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
         descriptor_file = open(self.descriptor_file_name).read()
-        self.descriptor = simplejson.loads(descriptor_file)
+        self.descriptor = json.loads(descriptor_file)
 
         # Get relevant descriptor properties
         self.url = self.descriptor.get('url')
