@@ -918,7 +918,7 @@ class LocalExecutor(object):
                         val = flag + sep + str(val)
                 # Remove file extensions from input value
                 if (self.safeGet(param_id, 'type') == 'File' or
-                        self.safeGet(param_id, 'type') == 'String'):
+                   self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
                         val = val.replace(extension, "")
                 # Here val can be a number so we need to cast it
