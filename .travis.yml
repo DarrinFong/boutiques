@@ -35,7 +35,8 @@ before_install:
 - echo 'export GOPATH=${HOME}/go' >> ~/.bashrc
 - echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
 - source ~/.bashrc
-- go version
+- sudo ln -s /usr/local/go/bin/go /usr/bin/go
+- sudo go version
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity
