@@ -29,7 +29,7 @@ before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
-- wget https://github.com/singularityware/singularity/releases/download/$SINGVER/singularity-$SINGVER.tar.gz
+- wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity-$SINGVER
 - ./configure --prefix=/usr/local --sysconfdir=/etc
