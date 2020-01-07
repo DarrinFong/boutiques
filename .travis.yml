@@ -33,7 +33,8 @@ before_install:
 - wget https://dl.google.com/go/go$GOVERSION.$OS-$ARCH.tar.gz
 - tar -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
 - echo 'export GOPATH=${PWD}/go' >> ~/.bashrc
-- echo 'export PATH=${PWD}/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc- source ~/.bashrc
+- echo 'export PATH=${PWD}/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
+- source ~/.bashrc
 - go version
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
