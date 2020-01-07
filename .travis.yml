@@ -21,9 +21,6 @@ node_js:
 
 env:
 - SINGVER=3.4.2  # the version of docker2singularity used below should match this one
-- GOVER=1.12
-- OS=linux
-- ARCH=amd64
 
 before_install:
 - sudo apt-get update -qq
@@ -32,9 +29,10 @@ before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
+- export GOVERSION=1.12 OS=linux ARCH=amd64
 - wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
-- tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
-- rm go$VERSION.$OS-$ARCH.tar.gz
+- tar -C /usr/local -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
+- rm go$GOVERSION.$OS-$ARCH.tar.gz
 - echo 'export GOPATH=${HOME}/go' >> ~/.bashrc
 - echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
 - source ~/.bashrc
