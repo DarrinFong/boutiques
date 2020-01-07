@@ -31,10 +31,10 @@ before_install:
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
-- cd singularity-$SINGVER
-- ./configure --prefix=/usr/local --sysconfdir=/etc
-- make
-- sudo make install
+- cd singularity
+- ./mconfig --prefix=/usr/local --sysconfdir=/etc
+- make -C ./builddir
+- sudo make -C ./builddir install
 - singularity --version
 - cat /etc/singularity/singularity.conf
 - cd ${TRAVIS_BUILD_DIR}/tools/python/
