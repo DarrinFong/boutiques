@@ -31,9 +31,9 @@ before_install:
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
 - export GOVERSION=1.12 OS=linux ARCH=amd64
 - wget https://dl.google.com/go/go$GOVERSION.$OS-$ARCH.tar.gz
-- tar -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
-- echo 'export GOPATH=${PWD}/go' >> ~/.bashrc
-- echo 'export PATH=${PWD}/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
+- sudo tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz
+- echo 'export GOPATH=${HOME}/go' >> ~/.bashrc
+- echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
 - source ~/.bashrc
 - go version
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
