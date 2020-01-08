@@ -20,7 +20,7 @@ node_js:
 - 5
 
 go:
-    1.12.x
+    1.12
 
 env:
 - SINGVER=3.4.2  # the version of docker2singularity used below should match this one
