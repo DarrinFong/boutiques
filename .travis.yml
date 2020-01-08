@@ -19,6 +19,9 @@ python:
 node_js:
 - 5
 
+go:
+    1.12.x
+
 env:
 - SINGVER=3.4.2  # the version of docker2singularity used below should match this one
 
@@ -29,17 +32,6 @@ before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
-- sudo rm -rf /usr/local/go
-- sudo rm -rf $(echo $GOPATH)
-- export GOVERSION=1.12 OS=linux ARCH=amd64
-- wget https://dl.google.com/go/go$GOVERSION.$OS-$ARCH.tar.gz
-- sudo tar -C /usr/local -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
-- echo 'export GOPATH=${HOME}/go' >> ~/.bashrc
-- echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
-- source ~/.bashrc
-- sudo bash -c 'echo Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/usr/local/go/bin" > /etc/sudoers.d/0_config'
-- sudo visudo -cf /etc/sudoers.d/0_config
-- sudo go env
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity
