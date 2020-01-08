@@ -29,7 +29,10 @@ before_install:
 - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
 - go version
 - go env
-- sudo -E go version
+- sudo bash -c 'echo Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/usr/local/go/bin" > /etc/sudoers.d/0_config'
+- sudo visudo -cf /etc/sudoers.d/0_config
+- sudo echo $PATH
+- sudo -E echo $PATH
 - sudo go version
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
