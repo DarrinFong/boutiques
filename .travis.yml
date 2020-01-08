@@ -35,6 +35,9 @@ before_install:
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity
+- go env
+- sudo - E go env
+- sudo go env
 - sudo -E ./mconfig
 - make -C ./builddir
 - sudo make -C ./builddir install
