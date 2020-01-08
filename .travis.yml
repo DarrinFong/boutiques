@@ -26,7 +26,7 @@ before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
-- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=master bash)"
+- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
 - go version
 - go env
 - sudo -E go version
@@ -37,7 +37,7 @@ before_install:
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity
-- sudo -E ./mconfig
+- ./mconfig
 - make -C ./builddir
 - sudo make -C ./builddir install
 - singularity --version
