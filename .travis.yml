@@ -30,7 +30,9 @@ before_install:
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
 - go env
-- sudo rm -r /home/travis/go
+- sudo rm -r /home/travis/gopath
+- sudo rm -r /home/travis/.gimme/versions/go1.7.4.linux.amd64
+- sudo rm -r /home/travis/.gimme/versions/go1.7.4.linux.amd64/pkg/tool/linux_amd64
 - sudo echo /etc/profile
 - sudo echo /$HOME/.profile
 - export GOVERSION=1.12 OS=linux ARCH=amd64
