@@ -29,6 +29,9 @@ before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
+- sudo rm -r /usr/local/go
+- sudo echo /etc/profile
+- sudo echo /$HOME/.profile
 - export GOVERSION=1.12 OS=linux ARCH=amd64
 - wget https://dl.google.com/go/go$GOVERSION.$OS-$ARCH.tar.gz
 - sudo tar -C /usr/local -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
