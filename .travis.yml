@@ -32,15 +32,13 @@ before_install:
 - go env
 - sudo rm -r /home/travis/gopath
 - sudo rm -r /home/travis/.gimme/versions/go1.7.4.linux.amd64
-- sudo rm -r /home/travis/.gimme/versions/go1.7.4.linux.amd64/pkg/tool/linux_amd64
 - sudo echo /etc/profile
 - sudo echo /$HOME/.profile
 - export GOVERSION=1.12 OS=linux ARCH=amd64
 - wget https://dl.google.com/go/go$GOVERSION.$OS-$ARCH.tar.gz
 - sudo tar -C /usr/local -xzvf go$GOVERSION.$OS-$ARCH.tar.gz
-- echo 'export GOPATH=${HOME}/go' >> ~/.bashrc
-- echo 'export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin' >> ~/.bashrc
-- source ~/.bashrc
+- export GOPATH=${HOME}/go
+- export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin
 - sudo bash -c 'echo Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/usr/local/go/bin" > /etc/sudoers.d/0_config'
 - sudo visudo -cf /etc/sudoers.d/0_config
 - sudo go env
