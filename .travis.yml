@@ -27,10 +27,9 @@ before_install:
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
 - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
-- go version
-- go env
-- sudo bash -c 'echo Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/usr/local/go/bin" > /etc/sudoers.d/0_config'
-- sudo visudo -cf /etc/sudoers.d/0_config
+- echo 'Defaults    env_keep += "GOPATH"' | sudo tee --append /etc/sudoers.d/env_keep
+- sudo visudo -cf /etc/sudoers.d/env_keep
+- echo $PATH
 - sudo echo $PATH
 - sudo -E echo $PATH
 - sudo go version
