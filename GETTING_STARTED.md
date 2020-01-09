@@ -38,7 +38,7 @@ From within your virtual environment in the `boutiques/tools/python` directory:
 - Install jsonlint: `npm install jsonlint -g` 
   - In case you don't have Node installed, instructions to install it are [here](https://www.npmjs.com/get-npm).
   - jsonlint is a tool to validate JSON files. 
-- Install Boutiques: `pip install -e . -r requirements.txt`
+- Install Boutiques: `pip install -e .`
 - Note that pytest, pycodestyle and jsonlint are all used by Travis CI, but it's best practice to test and validate your code locally before pushing it!
 
 ## 4. Build the container images needed for testing

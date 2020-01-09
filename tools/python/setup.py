@@ -18,7 +18,8 @@ DEPS = [
          "jsonschema",
          "tabulate",
          "mock",
-         "docopt"
+         "docopt",
+         "nexus-sdk; python_version >= '3.5'"
        ]
 
 setup(name="boutiques",
