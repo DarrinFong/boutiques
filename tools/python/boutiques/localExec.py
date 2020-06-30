@@ -46,17 +46,11 @@ class ExecutorOutput():
 
     def __str__(self):
 
-        formatted_output_files = ""
-        for f in self.output_files:
-            if formatted_output_files != "":
-                formatted_output_files += os.linesep
-            formatted_output_files += ("\t- "+str(f))
+        formatted_output_files = os.linesep.join(
+            [("\t- " + str(f)) for f in self.output_files]) or ""
 
-        formatted_missing_files = ""
-        for f in self.missing_files:
-            if formatted_missing_files != "":
-                formatted_missing_files += os.linesep
-            formatted_missing_files += ("\t- "+str(f))
+        formatted_missing_files = os.linesep.join(
+            [("\t- " + str(f)) for f in self.missing_files]) or ""
 
         def title(s):
             return colored(s + os.linesep, 'green')
@@ -96,9 +90,7 @@ class FileDescription():
     def __init__(self, boutiques_name, file_name, optional):
         self.boutiques_name = boutiques_name
         self.file_name = file_name
-        self.optional = 'Optional'
-        if not optional:
-            self.optional = 'Required'
+        self.optional = 'Optional' if optional else 'Required'
 
     def __str__(self):
         return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
@@ -134,8 +126,6 @@ class LocalExecutor(object):
 
     # Constructor
     def __init__(self, desc, invocation, options={}):
-        self._rkit = self._replaceKeysInTemplate  # Abbrev. for readability
-
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
@@ -157,7 +147,9 @@ class LocalExecutor(object):
 
         # Generate Summary for data collection
         if not self.skipDataCollect:
-            self.summary = self._generateSummary(desc)
+            self.summary = {}
+            self.summary['name'] = self.desc_dict['name']
+            self.summary['descriptor-doi'] = self._findDOI(desc)
 
         # Helpers Functions
         # The set of input parameters from the json descriptor
@@ -169,35 +161,29 @@ class LocalExecutor(object):
 
         # Container-image Options
         self.con = self.desc_dict.get('container-image')
-        self.launchDir = None
-        if self.con is not None:
-            self.con.get('working-directory')
+        self.launchDir = self.con.get('working-directory') if\
+            self.con is not None else None
 
         # Generate the command line
         if self.invocation:
             self.readInput(self.invocation)
 
-    # Retrieves the parameter corresponding to the given id
-    def byId(self, n):
-        return [v for v in self.inputs+self.outputs if v['id'] == n][0]
-
-    # Retrieves the group corresponding to the given id
-    def byGid(self, g):
-        return [v for v in self.groups if v['id'] == g][0]
+    # Retrieves the collection's parameter corresponding to the given id
+    def byId(self, n, collection=None):
+        collection = collection if collection else self.inputs + self.outputs
+        return [v for v in collection if v['id'] == n][0]
 
     # Retrieves the value of a field of an input
     # from the descriptor. Returns None if not present.
-    def safeGet(self, i, k):
-        if k not in list(self.byId(i).keys()):
-            return None
-        return self.byId(i)[k]
+    def safeGet(self, input_id, field):
+        inp = self.byId(input_id)
+        return inp[field] if field in inp else None
 
     # Retrieves the value of a field of a group from
     # the descriptor. Returns None if not present.
-    def safeGrpGet(self, g, k):
-        if k not in list(self.byGid(g).keys()):
-            return None
-        return self.byGid(g)[k]
+    def safeGrpGet(self, group_id, field):
+        grp = self.byId(group_id, collection=self.groups)
+        return grp[field] if field in grp else None
 
     # Retrieves the group a given parameter id belongs to;
     # otherwise, returns None
@@ -222,15 +208,15 @@ class LocalExecutor(object):
         '''
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'),\
-            con.get('image') if not self.noContainer else None
+        conType = con.get('type')
+        conImage = con.get('image') if not self.noContainer else None
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
         # Export environment variables,
         #  if they are specified in the descriptor
         envVars = {}
-        if 'environment-variables' in list(self.desc_dict.keys()):
+        if 'environment-variables' in self.desc_dict:
             variables = [(p['name'], p['value']) for p in
                          self.desc_dict['environment-variables']]
             inputsByValKey = {inp['value-key']: inp for inp in self.inputs}
@@ -243,10 +229,8 @@ class LocalExecutor(object):
         # Container script constant name
         # Note that docker/singularity cannot do a local volume
         # mount of files starting with a '.', hence this one does not
-        millitime = int(time.time()*1000)
-        dsname = ('temp-' +
-                  str(random.SystemRandom().randint(0, int(millitime))) +
-                  "-" + str(millitime) + '.localExec.boshjob.sh')
+        dsname = "temp-{0}-{1}.localExec.boshjob.sh".format(
+            random.randrange(0, 999999), int(time.time()*1000))
         dsname = op.realpath(dsname)
         # If container is present, alter the command template accordingly
         container_location = ""
@@ -509,11 +493,7 @@ class LocalExecutor(object):
             else:
                 lockDir = conName + "-lock"
 
-            maxcount = 36
-            count = 0
-
-            while count < maxcount:
-                count += 1
+            for _ in range(0, 36):
                 try:
                     os.mkdir(lockDir)
                 except OSError:
@@ -855,7 +835,7 @@ class LocalExecutor(object):
                         toCheck.append(mutreq)
                 for greq in [g for g in self.reqsOf(current['id']) if
                              g in [grp['id'] for grp in self.groups] and
-                             self.safeGrpGet(g, "mutually-exclusive")]:
+                             self.safeGrpGet(g, "mutually-exclusive") is True]:
                     # Check if one of the members is already added
                     # and don't add random member
                     memberFilled = False
@@ -878,7 +858,7 @@ class LocalExecutor(object):
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
-                    if self.safeGrpGet(g['id'], 'one-is-required')]:
+                    if self.safeGrpGet(g['id'], 'one-is-required') is True]:
             # Loop to choose an allowed value,
             # in case a previous choice disabled that one
             while True:
@@ -1104,16 +1084,15 @@ class LocalExecutor(object):
     # Private method to generate output file names.
     # Output file names will be put in self.out_dict.
     def _generateOutputFileNames(self):
-        if not hasattr(self, 'out_dict'):
-            # a dictionary that will contain the output file names
-            self.out_dict = {}
+        # a dictionary that will contain the output file names
+        self.out_dict = self.out_dict if hasattr(self, 'out_dict') else {}
+
         for outputId, isPathTemplate in [(x['id'], 'path-template' in x)
                                          for x in self.outputs]:
             if isPathTemplate:
-                if outputId in list(self.out_dict.keys()):
-                    outputFileName = self.out_dict[outputId]
-                else:
-                    outputFileName = self.safeGet(outputId, 'path-template')
+                outputFileName = self.out_dict[outputId]\
+                    if outputId in list(self.out_dict.keys())\
+                    else self.safeGet(outputId, 'path-template')
 
             # if 'conditional-path-template' in outputItem
             # (key=conditions, value=path)
@@ -1121,7 +1100,7 @@ class LocalExecutor(object):
             elif not isPathTemplate:
                 for templateObj in self.safeGet(outputId,
                                                 'conditional-path-template'):
-                    templateKey = list(templateObj.keys())[0]
+                    templateKey = list(templateObj)[0]
                     condition = self._getCondPathTemplateExp(templateKey)
                     # If condition is true, set fileName
                     # Stop checking (if-elif...)
@@ -1133,18 +1112,15 @@ class LocalExecutor(object):
                         break
 
             stripped_extensions = self.safeGet(
-                                        outputId,
-                                        "path-template-stripped-extensions")
-            if stripped_extensions is None:
-                stripped_extensions = []
-            se = stripped_extensions  # Renaming variable to save space
+                outputId, "path-template-stripped-extensions") or []
+
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
-            outputFileName = self._rkit(outputFileName,
+            outputFileName = self._replaceKeysInTemplate(outputFileName,
                                         use_flags=False,
                                         unfound_keys="keep",
-                                        stripped_extensions=se,
+                                        stripped_extensions=stripped_extensions,
                                         is_output=True,
                                         escape_special_chars=False)
 
@@ -1161,11 +1137,12 @@ class LocalExecutor(object):
             in_out_dict = self.in_dict.copy()
             in_out_dict.update(self.out_dict)
             if word in in_out_dict:
-                value = "{0}".format(in_out_dict[word])
-                if value.replace(".", "").replace("-", "").isdigit():
-                    parsedExp.append(in_out_dict[word])
-                else:
-                    parsedExp.append("\"{0}\"".format(value))
+                value = "{0}".format(in_out_dict[word])\
+                    .replace(".", "")\
+                    .replace("-", "")
+                parsedExp.append(in_out_dict[word]
+                                 if value.isdigit()
+                                 else "\"{0}\"".format(value))
             # Boolean expression key is not chosen (optional input),
             # therefore expression is false
             elif word in all_ids:
@@ -1176,39 +1153,29 @@ class LocalExecutor(object):
                 parsedExp.append(word)
         return " ".join("{0}".format(w) for w in parsedExp)
 
-    # Private method to write configuration files
     # Configuration files are output files that have a file-template
     def _writeConfigurationFiles(self):
-        for outputId in [x['id'] for x in self.outputs]:
-            fileTemplate = self.safeGet(outputId, 'file-template')
-            if fileTemplate is None:
-                continue  # this is not a configuration file
-            stripped_extensions = self.safeGet(
-                                        outputId,
-                                        "path-template-stripped-extensions")
-            if stripped_extensions is None:
-                stripped_extensions = []
-            se = stripped_extensions  # Renaming variable to save space
+        for outputId in [x['id'] for x in self.outputs
+                         if self.safeGet(x['id'], 'file-template') is not None]:
+
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
-            newTemplate = []
-            for line in fileTemplate:
-                newTemplate.append(self._rkit(line,
-                                              use_flags=False,
-                                              unfound_keys="clear",
-                                              stripped_extensions=se,
-                                              is_output=False,
-                                              escape_special_chars=True))
-            template = os.linesep.join(newTemplate)
+            fileTemplate = self.safeGet(outputId, 'file-template')
+            stripped_extensions = self.safeGet(
+                outputId, "path-template-stripped-extensions") or []
+            newTemplate = [self._replaceKeysInTemplate(line, use_flags=False,
+                                      unfound_keys="clear",
+                                      stripped_extensions=stripped_extensions,
+                                      is_output=False,
+                                      escape_special_chars=True)
+                           for line in fileTemplate]
+            newTemplate = os.linesep.join(newTemplate)
             # Write the configuration file
-            fileName = self.out_dict[outputId]
-            dirs = os.path.dirname(fileName)
-            if dirs and not os.path.exists(dirs):
-                os.makedirs(dirs)
-            file = open(fileName, 'w')
-            file.write(template)
-            file.close()
+            filePath = os.path.abspath(self.out_dict[outputId])
+            os.makedirs(os.path.dirname(filePath), exist_ok=True)
+            with open(filePath, 'w') as fhandle:
+                fhandle.write(newTemplate)
 
     # Private method to build the actual command line by substitution,
     # using the input data
@@ -1220,30 +1187,16 @@ class LocalExecutor(object):
         self._generateOutputFileNames()
         # Write configuration files
         self._writeConfigurationFiles()
-        # Get the command line template
-        template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._rkit(template, use_flags=True, unfound_keys="remove",
-                              stripped_extensions=[], is_output=False,
-                              escape_special_chars=True)
-        # Return substituted command line
-        return template
+        return self._replaceKeysInTemplate(self.desc_dict['command-line'], use_flags=True,
+                          unfound_keys="remove", stripped_extensions=[],
+                          is_output=False, escape_special_chars=True)
 
     # Print the command line result
     def printCmdLine(self):
-        print("Generated Command" +
-              ('s' if len(self.cmd_line) > 1 else '') + ':')
-        for cmd in self.cmd_line:
-            print(cmd)
-
-    # Private method to generate summary object of data
-    # collection file containing the tool name and descriptor DOI
-    def _generateSummary(self, desc):
-        summary = {}
-        summary['name'] = self.desc_dict['name']
-        summary['descriptor-doi'] = self._findDOI(desc)
-        return summary
+        print("Generated Command(s):")
+        print("\n".join(self.cmd_line))
 
     # Private method to attempt to find descriptor DOI
     # through various cases
